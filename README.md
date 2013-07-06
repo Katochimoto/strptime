@@ -1,0 +1,4 @@
+strptime
+========
+
+JavaScript strptime function
