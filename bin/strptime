@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+var nopt = require('nopt');
+var strptime = require('../strptime');
+
+var opts = {
+    "f": [String, null],
+    "s": [String]
+};
+var args = nopt(opts, {}, process.argv, 2);
+
+if (args.s) {
+    console.log(strptime(args.s, args.f));
+}

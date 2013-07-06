@@ -1,0 +1,39 @@
+{
+    "name": "strptime",
+    "version": "0.0.1",
+    "description": "JavaScript strptime function",
+    "main": "strptime.js",
+    "keywords": [
+        "strptime",
+        "javascript"
+    ],
+    "homepage": "https://github.com/Katochimoto/strptime",
+    "author": {
+        "name": "rikishi",
+        "email": "bufpost@yandex.ru"
+    },
+    "bugs": {
+        "email": "bufpost@yandex.ru"
+    },
+    "license": "BSD",
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:Katochimoto/strptime.git"
+    },
+    "scripts": {
+        "test": "make test"
+    },
+    "dependencies": {
+        "nopt": "*"
+    },
+    "devDependencies": {
+        "jshint": "*",
+        "uglify-js": "*",
+        "requirer": "0.0.1",
+        "mocha": "*",
+        "expect.js": "*"
+    },
+    "engines": {
+        "node": "*"
+    }
+}
