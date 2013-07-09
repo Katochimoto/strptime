@@ -8,6 +8,12 @@
  * Time: 19:17
  *
  */
+
+/**
+ * @param {String} str
+ * @param {String} format
+ * @returns {Date|Null}
+ */
 var strptime = function(str, format) {
     return strptime.parse(str, format);
 };
@@ -344,21 +350,20 @@ var strptime = function(str, format) {
             loop--;
         }
 
+        // TODO добавить проверку повторяющихся форматов
+
         formatTransform.make = [];
         var reg = format.replace(regSpec, formatTransform);
         reg = new RegExp(reg);
-        // TODO добавить проверку повторяющихся форматов
-
-
         var match = str.match(reg);
 
-        if (!match) {
+        if (!match || !formatTransform.make.length) {
             return null;
         }
 
         var date = new Date(0);
-        for (var i = 1, l = match.length; i < l; i++) {
-            if (!formatTransform.make[i - 1](date, match[i])) {
+        for (var i = 0, l = formatTransform.make.length; i < l; i++) {
+            if (!formatTransform.make[i](date, match[i + 1])) {
                 return null;
             }
         }
