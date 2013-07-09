@@ -1,10 +1,5 @@
-/**
- * User: rikishi
- * Date: 06.07.13
- * Time: 21:17
- *
- */
-(function() {
+/* jshint -W067 */
+;(function() {
     'use strict';
 
     /**
@@ -65,39 +60,46 @@ var strptime = function(str, format) {
 }(strptime));
     (function(strptime) {
 
+    var inArray = Array.prototype.indexOf || function(el) {
+        var l = this.length;
+        var i = 0;
+        while (i < l) {
+            if (el == this[i]) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    };
+
     var locale = strptime.locale;
 
-    var strRegNum2 = '([0-9]{2}|[0\\s]?[0-9]{1})';
-    var strRegNum3 = '([0-9]{3}|[0\\s]?[0-9]{2}|\\s?[0\\s]?[0-9]{1})';
-    var strRegStr = '(\\S+)';
+    var strRegNum2 = '[\\d\\s]?\\d';
+    var strRegNum3 = '\\d{3}|[0\\s]?\\d{2}|\\s?[0\\s]?\\d';
+    var strRegStr = '\\S+';
     var monthDay = [31, [28, 29], 31, 30, 31, 30, 31, 31, 30, 31, 30 ,31];
     var regAgregatSearch = /%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/g;
     var regAgregat = /%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/;
     var regSpec = /%(([#\^!~]{0,2})[aAbBfh]|([0\-_]?)[degHImMSVWyl]|[GnpPtuUwYzZs%])/g;
 
     var specifiers = {
-        '%': {
-            'reg': '(\\%)',
-            'make': function() {
-                return true;
-            }
-        },
+        '%': '\\%',
         'a': {
             'reg': strRegStr,
             'make': function(date, data) {
-                return inArray(locale.a, data) !== -1;
+                return inArray.call(locale.a, data) !== -1;
             }
         },
         'A': {
             'reg': strRegStr,
             'make': function(date, data) {
-                return inArray(locale.A, data) !== -1;
+                return inArray.call(locale.A, data) !== -1;
             }
         },
         'b': {
             'reg': strRegStr,
             'make': function(date, data) {
-                data = inArray(locale.b, data);
+                data = inArray.call(locale.b, data);
                 if (data === -1) {
                     return false;
                 }
@@ -109,7 +111,7 @@ var strptime = function(str, format) {
         'h': {
             'reg': strRegStr,
             'make': function(date, data) {
-                data = inArray(locale.b, data);
+                data = inArray.call(locale.b, data);
                 if (data === -1) {
                     return false;
                 }
@@ -121,7 +123,7 @@ var strptime = function(str, format) {
         'B': {
             'reg': strRegStr,
             'make': function(date, data) {
-                data = inArray(locale.B, data);
+                data = inArray.call(locale.B, data);
                 if (data === -1) {
                     return false;
                 }
@@ -133,7 +135,7 @@ var strptime = function(str, format) {
         'f': {
             'reg': strRegStr,
             'make': function(date, data) {
-                data = inArray(locale.f, data);
+                data = inArray.call(locale.f, data);
                 if (data === -1) {
                     return false;
                 }
@@ -156,7 +158,7 @@ var strptime = function(str, format) {
             }
         },
         'G': {
-            'reg': '(\\d{4})',
+            'reg': '\\d{4}',
             'make': function(date, data) {
                 data = data|0;
                 date.setUTCFullYear(data);
@@ -226,12 +228,7 @@ var strptime = function(str, format) {
                 return true;
             }
         },
-        'n': {
-            'reg': '(\\n)',
-            'make': function() {
-                return true;
-            }
-        },
+        'n': '\\n',
         /*'p': {
          'reg': strRegStr,
          'make': function(date, data) {
@@ -256,36 +253,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
-        't': {
-            'reg': '(\\t)',
-            'make': function() {
-                return true;
-            }
-        },
-        'u': {
-            'reg': '(\\d)',
-            'make': function() {
-                return true;
-            }
-        },
-        'U': {
-            'reg': strRegNum2,
-            'make': function() {
-                return true;
-            }
-        },
-        'w': {
-            'reg': '(\\d)',
-            'make': function() {
-                return true;
-            }
-        },
-        'W': {
-            'reg': strRegNum2,
-            'make': function() {
-                return true;
-            }
-        },
+        't': '\\t',
+        'u': '\\d',
+        'U': strRegNum2,
+        'w': '\\d',
+        'W': strRegNum2,
         'y': {
             'reg': strRegNum2,
             'make': function(date, data) {
@@ -300,7 +272,7 @@ var strptime = function(str, format) {
             }
         },
         'Y': {
-            'reg': '(\\d{4})',
+            'reg': '\\d{4}',
             'make': function(date, data) {
                 data = data|0;
                 date.setUTCFullYear(data);
@@ -308,7 +280,7 @@ var strptime = function(str, format) {
             }
         },
         /*'z': {
-         'reg': '([+\\-]\\d{4})',
+         'reg': '[+\\-]\\d{4}',
          'make': function(date, data) {
 
          }
@@ -327,7 +299,7 @@ var strptime = function(str, format) {
          }
          },*/
         's': {
-            'reg': '(\\d+)',
+            'reg': '\\d+',
             'make': function(date, data) {
                 data = data|0;
                 date.setUTCMilliseconds(data);
@@ -337,84 +309,44 @@ var strptime = function(str, format) {
 
 
 
-        'c': function() {
-            return locale.c;
-        },
-        'r': function() {
-            return locale.r;
-        },
-        'R': function() {
-            return '%H:%M';
-        },
-        'T': function() {
-            return '%H:%M:%S';
-        },
-        'x': function() {
-            return locale.x;
-        },
-        'X': function() {
-            return locale.X;
-        },
-        'D': function() {
-            return '%m/%d/%y';
-        },
-        'F': function() {
-            return '%Y-%m-%d';
-        },
+        'c': locale.c,
+        'r': locale.r,
+        'R': '%H:%M',
+        'T': '%H:%M:%S',
+        'x': locale.x,
+        'X': locale.X,
+        'D': '%m/%d/%y',
+        'F': '%Y-%m-%d',
 
 
-        'Date_iso': function() {
-            return '%Y-%m-%dT%H:%M:%S';
-        },
-        'Date_dBY_year_in_HM': function() {
-            return locale.Date_dBY_year_in_HM;
-        },
-        'Date_dBY_year': function() {
-            return locale.Date_dBY_year;
-        },
-        'Date_dBY': function() {
-            return locale.Date_dBY;
-        },
-        'Date_dBA': function() {
-            return locale.Date_dBA;
-        },
-        'Date_AdBY': function() {
-            return locale.Date_AdBY;
-        },
-        'Date_df_in_HM': function() {
-            return locale.Date_df_in_HM;
-        },
-        'Date_dfY': function() {
-            return locale.Date_dfY;
-        },
-        'Date_dB_in_HM': function() {
-            return locale.Date_dB_in_HM;
-        },
-        'Date_dmY__dot': function() {
-            return '%d.%m.%Y';
-        },
-        'Date_df': function() {
-            return locale.Date_df;
-        },
-        'Date_FT': function() {
-            return '%F %T';
-        },
-        'Date_dmY__minus': function() {
-            return '%d-%m-%Y';
-        }
+        'Date_iso': '%Y-%m-%dT%H:%M:%S',
+        'Date_dBY_year_in_HM': locale.Date_dBY_year_in_HM,
+        'Date_dBY_year': locale.Date_dBY_year,
+        'Date_dBY': locale.Date_dBY,
+        'Date_dBA': locale.Date_dBA,
+        'Date_AdBY': locale.Date_AdBY,
+        'Date_df_in_HM': locale.Date_df_in_HM,
+        'Date_dfY': locale.Date_dfY,
+        'Date_dB_in_HM': locale.Date_dB_in_HM,
+        'Date_dmY__dot': '%d.%m.%Y',
+        'Date_df': locale.Date_df,
+        'Date_FT': '%F %T',
+        'Date_dmY__minus': '%d-%m-%Y'
     };
 
     strptime.parse = function(str, format) {
-        var loop = 5;
-        formatTransform.make = [];
+        str = '' + str;
+        format = '' + format;
 
+        var loop = 5;
         while (regAgregatSearch.test(format) && loop) {
             format = format.replace(regAgregat, formatTransform);
             loop--;
         }
 
-
+        formatTransform.make = [];
         var reg = format.replace(regSpec, formatTransform);
+        reg = new RegExp(reg);
         // TODO добавить проверку повторяющихся форматов
 
 
@@ -437,8 +369,9 @@ var strptime = function(str, format) {
     function formatTransform(_, spec, mod, numPad, pos, str) {
         spec = '' + spec;
         mod = '' + mod;
-
         spec = spec.replace(/^[#_0\^\-!~]+/, '');
+
+
         var s = specifiers[spec];
 
         if (!s) {
@@ -456,22 +389,17 @@ var strptime = function(str, format) {
          return s(formatTransform.date, mod, numPad, genitive);
          */
 
-        if (typeof s === 'function') {
-            return s();
+        switch (typeof(s)) {
+            case 'function':
+                return s();
+            case 'string':
+                return s;
+            case 'object':
+                formatTransform.make.push(s.make);
+                return '(' + s.reg + ')';
+            default:
+                return _;
         }
-
-        formatTransform.make.push(s.make);
-        return s.reg;
-    }
-
-    function inArray(arr, el) {
-        for (var i = 0, l = arr.length; i < l; i++) {
-            if (el === arr[i]) {
-                return i;
-            }
-        }
-
-        return -1;
     }
 
 }(strptime));

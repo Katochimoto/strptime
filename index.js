@@ -1,10 +1,5 @@
-/**
- * User: rikishi
- * Date: 06.07.13
- * Time: 21:17
- *
- */
-(function() {
+/* jshint -W067 */
+;(function() {
     'use strict';
 
     require('lib/strptime.js');
