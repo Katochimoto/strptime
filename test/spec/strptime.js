@@ -1,5 +1,7 @@
 if (typeof require == 'function') {
+    /*jshint -W020 */
     strptime = require('../../strptime');
+    /*jshint -W020 */
     expect = require('expect.js');
 }
 
