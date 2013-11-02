@@ -1,5 +1,5 @@
 /* jshint -W067 */
-;(function() {
+(function() {
     'use strict';
 
     /**
@@ -12,11 +12,14 @@
 /**
  * @param {String} str
  * @param {String} format
+ * @param {Boolean} [local] локальное время
  * @returns {Date|Null}
  */
-var strptime = function(str, format) {
-    return strptime.parse(str, format);
+/*jshint -W079 */
+var strptime = function(str, format, local) {
+    return strptime.parse(str, format, local);
 };
+
 
     strptime.version = '0.0.1';
 
@@ -64,6 +67,8 @@ var strptime = function(str, format) {
     };
 
 }(strptime));
+
+
     (function(strptime) {
 
     var inArray = Array.prototype.indexOf || function(el) {
@@ -81,31 +86,19 @@ var strptime = function(str, format) {
     var locale = strptime.locale;
 
     var strRegNum2 = '[\\d\\s]?\\d';
-    var strRegNum3 = '\\d{3}|[0\\s]?\\d{2}|\\s?[0\\s]?\\d';
     var strRegStr = '\\S+';
-    var monthDay = [31, [28, 29], 31, 30, 31, 30, 31, 31, 30, 31, 30 ,31];
-    var regAgregatSearch = /%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/g;
-    var regAgregat = /%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/;
-    var regSpec = /%(([#\^!~]{0,2})[aAbBfh]|([0\-_]?)[degHImMSVWyl]|[GnpPtuUwYzZs%])/g;
 
     var specifiers = {
         '%': '\\%',
-        'a': {
-            'reg': strRegStr,
-            'make': function(date, data) {
-                return inArray.call(locale.a, data) !== -1;
-            }
-        },
-        'A': {
-            'reg': strRegStr,
-            'make': function(date, data) {
-                return inArray.call(locale.A, data) !== -1;
-            }
-        },
+        // сокращенное название дня недели, в соответствии с настройками локали
+        'a': strRegStr,
+        // полное название дня недели, в соответствии с настройками локали
+        'A': strRegStr,
+        // аббревиатура названия месяца, в соответствии с настройками локали
         'b': {
             'reg': strRegStr,
-            'make': function(date, data) {
-                data = inArray.call(locale.b, data);
+            'make': function(date, data, mod, gen) {
+                data = inArray.call(gen ? locale.bg : locale.b, toLetterCaseReverse(data, mod));
                 if (data === -1) {
                     return false;
                 }
@@ -114,10 +107,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+        // аббревиатура названия месяца, в соответствии с настройками локали (псевдоним %b)
         'h': {
             'reg': strRegStr,
-            'make': function(date, data) {
-                data = inArray.call(locale.b, data);
+            'make': function(date, data, mod, gen) {
+                data = inArray.call(gen ? locale.bg : locale.b, toLetterCaseReverse(data, mod));
                 if (data === -1) {
                     return false;
                 }
@@ -126,10 +120,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+        // полное название месяца, в соответствии с настройками локали
         'B': {
             'reg': strRegStr,
-            'make': function(date, data) {
-                data = inArray.call(locale.B, data);
+            'make': function(date, data, mod, gen) {
+                data = inArray.call(gen ? locale.Bg : locale.B, toLetterCaseReverse(data, mod));
                 if (data === -1) {
                     return false;
                 }
@@ -138,10 +133,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+        // аббревиатура названия месяца с точкой, в соответствии с настройками локали
         'f': {
             'reg': strRegStr,
-            'make': function(date, data) {
-                data = inArray.call(locale.f, data);
+            'make': function(date, data, mod, gen) {
+                data = inArray.call(gen ? locale.fg : locale.f, toLetterCaseReverse(data, mod));
                 if (data === -1) {
                     return false;
                 }
@@ -150,31 +146,36 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+
+
+        // двухзначный номер года в соответствии со стандартом ISO-8601:1988
         'g': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 0 || data > 99) {
                     return false;
                 }
 
-                data = data + 100 * ((new Date()).getUTCFullYear() / 100|0);
+                data = data + 100 * parseInt((new Date()).getUTCFullYear() / 100, 10);
                 date.setUTCFullYear(data);
                 return true;
             }
         },
+        // полная четырехзначная версия %g
         'G': {
             'reg': '\\d{4}',
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 date.setUTCFullYear(data);
                 return true;
             }
         },
+        // двухзначное представление дня месяца (с ведущими нулями)
         'd': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 1 || data > 31) {
                     return false;
                 }
@@ -182,10 +183,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+        // день месяца, с ведущим пробелом, если он состоит из одной цифры
         'e': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 1 || data > 31) {
                     return false;
                 }
@@ -194,10 +196,11 @@ var strptime = function(str, format) {
             }
         },
 
+        // двухзначный номер часа в 24-часовом формате
         'H': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 0 || data > 23) {
                     return false;
                 }
@@ -205,17 +208,24 @@ var strptime = function(str, format) {
                 return true;
             }
         },
-        /*'I': {
-         'reg': strRegNum2,
-         'make': function(date, data) {
-         data = data|0;
-         return data > 0 && data < 13;
-         }
-         },*/
+        // двухзначный номер часа в 12-часовом формате
+        'I': {
+            'reg': strRegNum2,
+            'make': function(date, data) {
+                data = parseInt(data, 10);
+                if (data < 1 || data > 12) {
+                    return false;
+                }
+
+                date.setUTCHours(date.getUTCHours() + data);
+                return true;
+            }
+        },
+        // двухзначный порядковый номер месяца (с ведущими нулями)
         'm': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 1 || data > 12) {
                     return false;
                 }
@@ -223,10 +233,11 @@ var strptime = function(str, format) {
                 return true;
             }
         },
+        // двухзначный номер минуты (с ведущими нулями)
         'M': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 0 || data > 59) {
                     return false;
                 }
@@ -235,23 +246,44 @@ var strptime = function(str, format) {
             }
         },
         'n': '\\n',
-        /*'p': {
-         'reg': strRegStr,
-         'make': function(date, data) {
+        // 'AM' или 'PM' в верхнем регистре, в зависимости от указанного времени
+        'p': {
+            'reg': strRegStr,
+            'make': function(date, data) {
+                data = inArray.call(locale.P, data.toLowerCase());
+                if (data === -1) {
+                    return false;
+                }
 
-         }
-         },
-         'P': {
-         'reg': strRegStr,
-         'make': function(date, data) {
+                if (data === 1) {
+                    date.setUTCHours(date.getUTCHours() + 12);
+                }
 
-         }
-         },*/
+                return true;
+            }
+        },
+        // 'am' или 'pm' в зависимости от указанного времени
+        'P': {
+            'reg': strRegStr,
+            'make': function(date, data) {
+                data = inArray.call(locale.P, data.toLowerCase());
+                if (data === -1) {
+                    return false;
+                }
 
+                if (data === 1) {
+                    date.setUTCHours(date.getUTCHours() + 12);
+                }
+
+                return true;
+            }
+        },
+
+        // двухзначный номер секунды (с ведущими нулями)
         'S': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 0 || data > 60) {
                     return false;
                 }
@@ -264,51 +296,65 @@ var strptime = function(str, format) {
         'U': strRegNum2,
         'w': '\\d',
         'W': strRegNum2,
+        // последние 2 цифры года
         'y': {
             'reg': strRegNum2,
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 if (data < 0 || data > 99) {
                     return false;
                 }
 
-                data = data + 100 * ((new Date()).getUTCFullYear() / 100|0);
+                data = data + 100 * parseInt((new Date()).getUTCFullYear() / 100, 10);
                 date.setUTCFullYear(data);
                 return true;
             }
         },
+        // год
         'Y': {
             'reg': '\\d{4}',
             'make': function(date, data) {
-                data = data|0;
+                data = parseInt(data, 10);
                 date.setUTCFullYear(data);
                 return true;
             }
         },
-        /*'z': {
-         'reg': '[+\\-]\\d{4}',
-         'make': function(date, data) {
+        'z': {
+            'reg': '[+\\-]\\d{4}',
+            'make': function(date, data) {
+                var m = data.match(/^([+\-])(\d{2})(\d{2})$/);
+                if (!m) {
+                    return false;
+                }
 
-         }
-         },
-         'Z': {
-         'reg': strRegStr,
-         'make': function(date, data) {
+                var offset = (parseInt(m[2], 10) * 60 + parseInt(m[3], 10)) * 60000;
+                if (m[1] === '+') {
+                    offset = -offset;
+                }
 
-         }
-         },
-         'l': {
-         'reg': strRegNum2,
-         'make': function(date, data) {
-         data = data|0;
-         return data > 0 && data < 13;
-         }
-         },*/
+                date.setTime(date.getTime() + offset);
+
+                return true;
+            }
+        },
+        'l': {
+            'reg': strRegNum2,
+            'make': function(date, data) {
+                data = parseInt(data, 10);
+                if (data < 1 || data > 12) {
+                    return false;
+                }
+
+                date.setUTCHours(date.getUTCHours() + data);
+                return true;
+            }
+        },
+        // метка времени Эпохи Unix
         's': {
             'reg': '\\d+',
             'make': function(date, data) {
-                data = data|0;
-                date.setUTCMilliseconds(data);
+                data = parseInt(data, 10);
+                date.setTime(data * 1000);
                 return true;
             }
         },
@@ -340,20 +386,19 @@ var strptime = function(str, format) {
         'Date_dmY__minus': '%d-%m-%Y'
     };
 
-    strptime.parse = function(str, format) {
-        str = '' + str;
-        format = '' + format;
+    strptime.parse = function(str, format, local) {
+        str = String(str);
+        format = String(format);
 
         var loop = 5;
-        while (regAgregatSearch.test(format) && loop) {
-            format = format.replace(regAgregat, formatTransform);
+        while (/%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/g.test(format) && loop) {
+            format = format.replace(/%(Date_[a-zA-Z0-9_]+|[cDFrRTxX])/, formatTransform);
             loop--;
         }
 
-        // TODO добавить проверку повторяющихся форматов
-
         formatTransform.make = [];
-        var reg = format.replace(regSpec, formatTransform);
+        var reg = format.replace(/%(([#\^!~]{0,2})[aAbBfh]|([0\-_]?)[degHImMSVWyl]|[GnpPtuUwYzZs%])/g, formatTransform);
+
         reg = new RegExp(reg);
         var match = str.match(reg);
 
@@ -361,21 +406,26 @@ var strptime = function(str, format) {
             return null;
         }
 
-        var date = new Date(0);
+        var date = new Date(Date.UTC(0, 0));
+
         for (var i = 0, l = formatTransform.make.length; i < l; i++) {
-            if (!formatTransform.make[i](date, match[i + 1])) {
+            var build = formatTransform.make[i];
+            if (!build[0](date, match[i + 1], build[1], build[2])) {
                 return null;
             }
+        }
+
+        if (!local) {
+            date.setTime(date.getTime() + date.getTimezoneOffset() * 60000);
         }
 
         return date;
     };
 
     function formatTransform(_, spec, mod, numPad, pos, str) {
-        spec = '' + spec;
-        mod = '' + mod;
+        spec = String(spec);
+        mod = String(mod);
         spec = spec.replace(/^[#_0\^\-!~]+/, '');
-
 
         var s = specifiers[spec];
 
@@ -383,30 +433,52 @@ var strptime = function(str, format) {
             return _;
         }
 
-        /*var genitive = false;
-         if (mod.indexOf('!') === -1
-         && spec.length === 1
-         && (mod.indexOf('~') > -1 || ('bBf'.indexOf(spec) > -1 && /%[0\-_]?d[\s]+$/.test(str.substr(0, pos))))) {
+        var genitive = false;
+        if (mod.indexOf('!') === -1 && spec.length === 1 && (mod.indexOf('~') > -1 || ('bBf'.indexOf(spec) > -1 && /%[0\-_]?d[\s]+$/.test(str.substr(0, pos))))) {
 
-         genitive = true;
-         }
+            genitive = true;
+        }
 
-         return s(formatTransform.date, mod, numPad, genitive);
-         */
+        if ((spec === 'I' || spec === 'l') && !/%[pP]/.test(str)) {
+            throw new Error('Undefined AM/PM');
+        }
+
+        // TODO добавить проверку повторяющихся форматов
 
         switch (typeof(s)) {
-            case 'function':
-                return s();
-            case 'string':
-                return s;
-            case 'object':
-                formatTransform.make.push(s.make);
-                return '(' + s.reg + ')';
-            default:
-                return _;
+        case 'function':
+            return s();
+        case 'string':
+            return s;
+        case 'object':
+            formatTransform.make.push([s.make, mod, genitive]);
+            return '(' + s.reg + ')';
+        default:
+            return _;
         }
     }
 
+    /**
+     * @param {String} str
+     * @param {String} [mode]
+     * @returns {String}
+     */
+    function toLetterCaseReverse(str, mode) {
+        str = String(str);
+        mode = String(mode);
+
+        if (mode.indexOf('#') !== -1) {
+            return str.substr(0, 1).toUpperCase() + str.substr(1);
+        }
+
+        if (mode.indexOf('^') !== -1) {
+            return str.substr(0, 1) + str.substr(1).toLowerCase();
+        }
+
+        return str;
+    }
+
 }(strptime));
+
 
 }());
