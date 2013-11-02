@@ -6,11 +6,13 @@ var strptime = require('../strptime');
 var opts = {
     "s": [String],
     "f": [String, null],
-    "u": [Boolean, null]
+    "l": [Boolean, null]
 };
 
 var args = nopt(opts, {}, process.argv, 2);
 
 if (args.s) {
-    console.log(strptime(args.s, args.f, args.u));
+    var d = strptime(args.s, args.f, args.l);
+    console.log('UTC: ', d.toUTCString());
+    console.log('Locale: ', d.toLocaleString());
 }
