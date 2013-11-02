@@ -6,11 +6,11 @@ var strptime = require('../strptime');
 var opts = {
     "s": [String],
     "f": [String, null],
-    "l": [Boolean, null]
+    "u": [Boolean, null]
 };
 
 var args = nopt(opts, {}, process.argv, 2);
 
 if (args.s) {
-    console.log(strptime(args.s, args.f, args.l));
+    console.log(strptime(args.s, args.f, args.u));
 }

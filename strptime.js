@@ -12,12 +12,12 @@
 /**
  * @param {String} str
  * @param {String} format
- * @param {Boolean} [local] локальное время
+ * @param {Boolean} [utc]
  * @returns {Date|Null}
  */
 /*jshint -W079 */
-var strptime = function(str, format, local) {
-    return strptime.parse(str, format, local);
+var strptime = function(str, format, utc) {
+    return strptime.parse(str, format, utc);
 };
 
 
@@ -386,7 +386,7 @@ var strptime = function(str, format, local) {
         'Date_dmY__minus': '%d-%m-%Y'
     };
 
-    strptime.parse = function(str, format, local) {
+    strptime.parse = function(str, format, utc) {
         str = String(str);
         format = String(format);
 
@@ -415,7 +415,7 @@ var strptime = function(str, format, local) {
             }
         }
 
-        if (!local) {
+        if (utc) {
             date.setTime(date.getTime() + date.getTimezoneOffset() * 60000);
         }
 
