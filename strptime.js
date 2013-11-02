@@ -12,12 +12,12 @@
 /**
  * @param {String} str
  * @param {String} format
- * @param {Boolean} [utc]
+ * @param {Boolean} [local]
  * @returns {Date|Null}
  */
 /*jshint -W079 */
-var strptime = function(str, format, utc) {
-    return strptime.parse(str, format, utc);
+var strptime = function(str, format, local) {
+    return strptime.parse(str, format, local);
 };
 
 
@@ -386,7 +386,7 @@ var strptime = function(str, format, utc) {
         'Date_dmY__minus': '%d-%m-%Y'
     };
 
-    strptime.parse = function(str, format, utc) {
+    strptime.parse = function(str, format, local) {
         str = String(str);
         format = String(format);
 
@@ -399,8 +399,7 @@ var strptime = function(str, format, utc) {
         formatTransform.make = [];
         var reg = format.replace(/%(([#\^!~]{0,2})[aAbBfh]|([0\-_]?)[degHImMSVWyl]|[GnpPtuUwYzZs%])/g, formatTransform);
 
-        reg = new RegExp(reg);
-        var match = str.match(reg);
+        var match = str.match(new RegExp(reg));
 
         if (!match || !formatTransform.make.length) {
             return null;
@@ -415,7 +414,7 @@ var strptime = function(str, format, utc) {
             }
         }
 
-        if (utc) {
+        if (local) {
             date.setTime(date.getTime() + date.getTimezoneOffset() * 60000);
         }
 
